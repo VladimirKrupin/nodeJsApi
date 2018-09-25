@@ -1,73 +1,30 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var MongoClient = require('mongodb');
-
 var app = express();
-var db;
-
-
+var dbo = require('./db');
+var artistsController = require('./controllers/artists');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", function (req,res) {
-  res.send("Hello Api");
+  res.send("Home");
 });
 
-var artists = [
-  {
-    id: 1,
-    name: 'guf'
-  },
-  {
-    id: 2,
-    name: 'basta'
-  },
-  {
-    id: 3,
-    name: 'korz'
-  },
-];
+app.get("/artists/", artistsController.all);
 
-app.get("/artists", function (req,res) {
-  res.send(artists);
-});
+app.get("/artists/:id",  artistsController.findById);
 
-app.get("/artists/:id", function (req,res) {
-  var artist = artists.find(function (artist){
-    return artist.id === Number(req.params.id);
+
+app.post("/artists/", artistsController.create);
+
+app.put("/artists/:id", artistsController.update);
+
+app.delete("/artists/:id", artistsController.delete);
+
+dbo.connect("mongodb://localhost:27017/", function(err) {
+  if (err) throw err;
+  app.listen(3012, function () {
+    console.log("Api app started!");
   });
-  res.send(artist.name);
-});
-
-
-app.post("/artists/", function (req,res) {
-  var artist = {
-    id: Date.now(),
-    name: req.body.name
-  };
-  artists.push(artist);
-  res.send(artist);
-});
-
-app.put("/artists/:id", function (req,res) {
-  var artist = artists.find(function (artist){
-    return artist.id === Number(req.params.id);
-  });
-  artist.name = req.body.name;
-  res.sendStatus(200);
-});
-
-app.delete("/artists/:id", function (req,res) {
-  artists = artists.filter(function (artist) {
-    return artist.id !== Number(req.params.id);
-  });
-  res.sendStatus(200);
-});
-
-
-let port = 3012;
-
-app.listen(port, function () {
-  console.log("Api app started! on port " + port);
 });
