@@ -12,7 +12,7 @@ exports.connect = function (url, done) {
     if (err) {
       return done(err);
     }
-    state.db = db.db("mydb");
+    state.db = db.db("friday");
     done();
   })
 };
